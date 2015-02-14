@@ -16,5 +16,5 @@ import java.lang.annotation.*;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableCircuitBreaker
-public @interface EnableMicroservice {
+public @interface SpringCloudApplication {
 }
