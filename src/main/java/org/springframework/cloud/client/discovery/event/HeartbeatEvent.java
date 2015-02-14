@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client.discovery;
+package org.springframework.cloud.client.discovery.event;
 
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Event to be published after the local service instance registers itself with a
- * discovery service.
- *
+ * Event DiscoveryClient implementation can broadcast if they support
+ * heartbeat's from the discovery server
  * @author Spencer Gibb
  */
 @SuppressWarnings("serial")
-public class InstanceRegisteredEvent<T> extends ApplicationEvent {
+public class HeartbeatEvent extends ApplicationEvent {
 
-	private T config;
+	private final Object value;
 
-	/**
-	 * Create a new {@link InstanceRegisteredEvent} instance.
-	 * @param source the component that published the event (never {@code null})
-	 * @param config the configuration of the instance
-	 */
-	public InstanceRegisteredEvent(Object source, T config) {
+	public HeartbeatEvent(Object source, Object value) {
 		super(source);
-		this.config = config;
+		this.value = value;
 	}
 
-	public T getConfig() {
-		return this.config;
+	public Object getValue() {
+		return this.value;
 	}
 
 }

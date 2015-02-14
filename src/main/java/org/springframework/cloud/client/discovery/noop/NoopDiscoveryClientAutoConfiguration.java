@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client.discovery;
+package org.springframework.cloud.client.discovery.noop;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,25 +24,30 @@ import javax.annotation.PostConstruct;
 import lombok.extern.apachecommons.CommonsLog;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.embedded.EmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
+import org.springframework.util.ClassUtils;
 
 /**
  * @author Dave Syer
  */
 @Configuration
 @EnableConfigurationProperties
+@ConditionalOnMissingBean(DiscoveryClient.class)
 @CommonsLog
-public class NoopDiscoveryClientConfiguration implements
+public class NoopDiscoveryClientAutoConfiguration implements
 		ApplicationListener<ContextRefreshedEvent> {
 
 	@Autowired(required = false)
@@ -65,26 +70,39 @@ public class NoopDiscoveryClientConfiguration implements
 		catch (UnknownHostException e) {
 			log.error("Cannot get host info", e);
 		}
+		int port = findPort();
+		this.serviceInstance = new DefaultServiceInstance(this.environment.getProperty(
+				"spring.application.name", "application"), host, port, false);
+	}
+
+	private int findPort() {
 		int port = 0;
 		if (this.server != null && this.server.getPort() != null) {
 			port = this.server.getPort();
 		}
-		if (this.context instanceof EmbeddedWebApplicationContext) {
-			EmbeddedServletContainer container = ((EmbeddedWebApplicationContext) this.context)
-					.getEmbeddedServletContainer();
-			if (container != null) {
-				// TODO: why is it null
-				port = container.getPort();
+		if (ClassUtils.isPresent(
+				"org.springframework.web.context.support.GenericWebApplicationContext",
+				null)) {
+			if (this.context instanceof EmbeddedWebApplicationContext) {
+				EmbeddedServletContainer container = ((EmbeddedWebApplicationContext) this.context)
+						.getEmbeddedServletContainer();
+				if (container != null) {
+					port = container.getPort();
+				}
 			}
 		}
-		this.serviceInstance = new DefaultServiceInstance(this.environment.getProperty(
-				"spring.application.name", "application"), host, port);
+		else {
+			// Apparently spring-web is not on the classpath
+			if (log.isDebugEnabled()) {
+				log.debug("Could not locate port in embedded container (spring-web not available)");
+			}
+		}
+		return port;
 	}
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		this.context.publishEvent(new InstanceRegisteredEvent<>(this,
-				this.environment));
+		this.context.publishEvent(new InstanceRegisteredEvent<>(this, this.environment));
 	}
 
 	@Bean

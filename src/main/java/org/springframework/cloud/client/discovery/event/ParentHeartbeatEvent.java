@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client;
+package org.springframework.cloud.client.discovery.event;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.springframework.context.ApplicationEvent;
 
 /**
+ * Heartbeat Event that a Parent ApplicationContext can send to a child Context.
+ * Useful when config server is located via DiscoveryClient
  * @author Spencer Gibb
  */
-public class SingleImplementationImportSelectorTests {
+@SuppressWarnings("serial")
+public class ParentHeartbeatEvent extends ApplicationEvent {
 
-	@Test
-	public void testFindAnnotation() {
-		MyAnnotationImportSelector selector = new MyAnnotationImportSelector();
-		assertEquals("annotationClass was wrong", MyAnnotation.class,
-				selector.getAnnotationClass());
+	private final Object value;
+
+	public ParentHeartbeatEvent(Object source, Object value) {
+		super(source);
+		this.value = value;
 	}
 
-	public static @interface MyAnnotation {
+	public Object getValue() {
+		return this.value;
 	}
 
-	public static class MyAnnotationImportSelector extends
-			SingleImplementationImportSelector<MyAnnotation> {
-
-		@Override
-		protected boolean isEnabled() {
-			return true;
-		}
-
-	}
 }

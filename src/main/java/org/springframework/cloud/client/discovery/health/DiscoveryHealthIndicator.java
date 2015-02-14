@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client.discovery;
+package org.springframework.cloud.client.discovery.health;
 
 import org.springframework.boot.actuate.health.Health;
 
 /**
+ * A health indicator interface specific for a DiscoveryClient implementation
  * @author Spencer Gibb
  */
 public interface DiscoveryHealthIndicator {

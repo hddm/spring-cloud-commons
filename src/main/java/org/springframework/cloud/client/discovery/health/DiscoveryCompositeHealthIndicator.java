@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client.discovery;
+package org.springframework.cloud.client.discovery.health;
 
 import java.util.List;
 
@@ -25,6 +25,8 @@ import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 
 /**
+ * Gathers all DiscoveryHealthIndicator's from a DiscoveryClient implementation
+ * and aggregates the statuses.
  * @author Spencer Gibb
  */
 public class DiscoveryCompositeHealthIndicator extends CompositeHealthIndicator {

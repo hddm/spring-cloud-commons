@@ -25,9 +25,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.client.discovery.DiscoveryClientHealthIndicator;
-import org.springframework.cloud.client.discovery.DiscoveryCompositeHealthIndicator;
-import org.springframework.cloud.client.discovery.DiscoveryHealthIndicator;
+import org.springframework.cloud.client.discovery.health.DiscoveryClientHealthIndicator;
+import org.springframework.cloud.client.discovery.health.DiscoveryCompositeHealthIndicator;
+import org.springframework.cloud.client.discovery.health.DiscoveryHealthIndicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -39,25 +39,21 @@ import org.springframework.core.annotation.Order;
  */
 @Configuration
 @ConditionalOnClass(HealthIndicator.class)
+@ConditionalOnBean(DiscoveryClient.class)
+@ConditionalOnProperty(value = "spring.cloud.discovery.enabled", matchIfMissing = true)
 @Order(0)
 public class CommonsClientAutoConfiguration {
 
-	@Configuration
-	@ConditionalOnBean(DiscoveryClient.class)
-	@ConditionalOnProperty(value = "spring.cloud.discovery.enabled", matchIfMissing = true)
-	protected static class HealthConfiguration {
-
-		@Bean
-		public DiscoveryClientHealthIndicator instancesHealthIndicator(
-				DiscoveryClient discoveryClient) {
-			return new DiscoveryClientHealthIndicator(discoveryClient);
-		}
-
-		@Bean
-		public DiscoveryCompositeHealthIndicator discoveryHealthIndicator(
-				HealthAggregator aggregator, List<DiscoveryHealthIndicator> indicators) {
-			return new DiscoveryCompositeHealthIndicator(aggregator, indicators);
-		}
-
+	@Bean
+	public DiscoveryClientHealthIndicator instancesHealthIndicator(
+			DiscoveryClient discoveryClient) {
+		return new DiscoveryClientHealthIndicator(discoveryClient);
 	}
+
+	@Bean
+	public DiscoveryCompositeHealthIndicator discoveryHealthIndicator(
+			HealthAggregator aggregator, List<DiscoveryHealthIndicator> indicators) {
+		return new DiscoveryCompositeHealthIndicator(aggregator, indicators);
+	}
+
 }

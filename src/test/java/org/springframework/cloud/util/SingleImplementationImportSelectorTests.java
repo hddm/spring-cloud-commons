@@ -14,25 +14,35 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.client.circuitbreaker;
+package org.springframework.cloud.util;
 
-import org.springframework.boot.bind.RelaxedPropertyResolver;
+import org.junit.Test;
 import org.springframework.cloud.util.SingleImplementationImportSelector;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Import a single circuit breaker implementation Configuration
  * @author Spencer Gibb
  */
-@Order(Ordered.LOWEST_PRECEDENCE - 100)
-public class EnableCircuitBreakerImportSelector extends
-		SingleImplementationImportSelector<EnableCircuitBreaker> {
+public class SingleImplementationImportSelectorTests {
 
-	@Override
-	protected boolean isEnabled() {
-		return new RelaxedPropertyResolver(getEnvironment()).getProperty(
-				"spring.cloud.circuit.breaker.enabled", Boolean.class, Boolean.TRUE);
+	@Test
+	public void testFindAnnotation() {
+		MyAnnotationImportSelector selector = new MyAnnotationImportSelector();
+		assertEquals("annotationClass was wrong", MyAnnotation.class,
+				selector.getAnnotationClass());
 	}
 
+	public static @interface MyAnnotation {
+	}
+
+	public static class MyAnnotationImportSelector extends
+			SingleImplementationImportSelector<MyAnnotation> {
+
+		@Override
+		protected boolean isEnabled() {
+			return true;
+		}
+
+	}
 }
